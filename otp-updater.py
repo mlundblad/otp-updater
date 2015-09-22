@@ -56,6 +56,9 @@ class GTFSUpdater(object):
             reader = iter(csv.reader(feed_list))
 
             for row in reader:
+                # skip empty lines
+                if len(row) == 0:
+                    continue
                 if len(row) < 3 or len(row) > 4:
                     print "Incorrect feed spec " + str(row)
                     continue
