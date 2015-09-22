@@ -169,7 +169,6 @@ class GTFSUpdater(object):
 
     def _get_last_modified_for_url(self, url):
         u = urlparse(url)
-        print 'url: ' + str(u)
         if u.scheme == 'https':
             conn = httplib.HTTPSConnection(u.netloc)
         else:
