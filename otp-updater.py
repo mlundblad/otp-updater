@@ -23,7 +23,7 @@
 """
 
 Usage:
-  otp-updater.py [--otp-base-dir=<path>] [--feed-list=<path>] --otp-command=<path> --force-rebuild
+  otp-updater.py [--otp-base-dir=<path>] [--feed-list=<path>] --otp-command=<path> [--force-rebuild]
 
 Options:
   -h --help              Show this screen.
