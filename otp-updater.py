@@ -59,6 +59,9 @@ class GTFSUpdater(object):
                 # skip empty lines
                 if len(row) == 0:
                     continue
+                # skip lines starting with a #
+                if row[0].startswith('#'):
+                    continue
                 if len(row) < 3 or len(row) > 4:
                     print "Incorrect feed spec " + str(row)
                     continue
