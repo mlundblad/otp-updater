@@ -73,6 +73,8 @@ class GTFSUpdater(object):
                     print "Incorrect feed spec " + str(row)
                     continue
                 self._update_feed(row)
+                # output empty line
+                print ''
         # update graphs
         self._update_graphs()
 
@@ -119,6 +121,9 @@ class GTFSUpdater(object):
         if os.path.exists(local_feed_path):
             local_feed_updated = datetime.fromtimestamp(os.path.getmtime(local_feed_path))
 
+            print 'Remote feed updated on: ' + str(remote_feed_updated)
+            print 'Local feed updated on: ' + str(local_feed_updated)
+
             if remote_feed_updated <> None and remote_feed_updated <= local_feed_updated:
                 print 'Local feed is up-to-date, skipping'
                 return
@@ -143,6 +148,7 @@ class GTFSUpdater(object):
                 self._updated_graphs.add(graph)
                 
     def _update_graphs(self):
+        print 'Rebuilding updated graphs'
         for graph in self._updated_graphs:
             self._update_graph(graph)
 
@@ -151,8 +157,13 @@ class GTFSUpdater(object):
         graph_path = os.path.join(self.options['--otp-base-dir'], 'graphs', graph)
         print 'Running OTP command: ' + command
         print 'with path: ' + graph_path
-        call([command, '--build', graph_path])
-        
+        retcode = call([command, '--build', graph_path])
+
+        if retcode == 0:
+            print 'Sucessfully updated graph'
+        else:
+            print 'Error updating graph'
+
     # create graph dir if it doesn't exist
     def _create_graph_dir(self, otp_base_dir, graph):
         path = os.path.join(otp_base_dir, 'graphs', graph)
