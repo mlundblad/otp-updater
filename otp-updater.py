@@ -36,7 +36,14 @@ Options:
                          for debugging)
 """
 
-import csv, os, urllib2, httplib, tempfile, shutil, hashlib, sets
+import csv
+import os
+import urllib2
+import httplib
+import tempfile
+import shutil
+import hashlib
+import sets
 from urlparse import urlparse
 from dateutil import parser
 from datetime import datetime
