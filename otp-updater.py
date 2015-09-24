@@ -78,6 +78,9 @@ class GTFSUpdater(object):
         # update graphs
         self._update_graphs()
 
+    def _is_force_rebuild_set(self):
+        return self.options['--force-rebuild']
+
     def _update_feed(self, row):
         otp_base_dir = self.options['--otp-base-dir']
         graph = row[0]
@@ -90,8 +93,8 @@ class GTFSUpdater(object):
 
         # if the force rebuild option is set, unconditionally add to graphs
         # to be updated
-        if self.options['--force-rebuild']:
-            print '--force-rebuild was set, so unconditionally add graph to be rebuilt'
+        if self._is_force_rebuild_set():
+            print 'The force rebuild option was set, so unconditionally add graph to be rebuilt'
             self._updated_graphs.add(graph)
 
         
