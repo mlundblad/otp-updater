@@ -92,7 +92,7 @@ class GTFSUpdater(object):
         feed = row[1]
         feed_url = row[2]
         
-        self._create_graph_dir(otp_base_dir, graph)
+        self._create_graph_dir(graph)
         
         print "Processing feed: " + feed + ", for graph: " + graph
 
@@ -173,8 +173,8 @@ class GTFSUpdater(object):
             print 'Error updating graph'
 
     # create graph dir if it doesn't exist
-    def _create_graph_dir(self, otp_base_dir, graph):
-        path = os.path.join(otp_base_dir, 'graphs', graph)
+    def _create_graph_dir(self, graph):
+        path = os.path.join(self._get_otp_base_dir(), 'graphs', graph)
         if not os.path.exists(path):
             print "Graph dir " + path + " didn't exist, so creating it"
             os.makedirs(path)
