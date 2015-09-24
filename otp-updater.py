@@ -23,7 +23,7 @@
 """
 
 Usage:
-  otp-updater.py [--otp-base-dir=<path>] [--feed-list=<path>] --otp-command=<path> [--force-rebuild]
+  otp-updater.py [--otp-base-dir=<path>] [--feed-list=<path>] --otp-command=<path> [--force-rebuild] [--keep-failed-graphs]
 
 Options:
   -h --help              Show this screen.
@@ -34,6 +34,8 @@ Options:
                          (used to trigger rebuilds of graphs)
   --force-rebuild        Always trigger rebuild of all graphs (used mainly
                          for debugging)
+  --keep-failed-graphs   Don't clean graph directories that failed to be built
+                         successfully
 """
 
 import csv
@@ -81,8 +83,11 @@ class GTFSUpdater(object):
     def _is_force_rebuild_set(self):
         return self.options['--force-rebuild']
 
+    def _get_otp_base_dir(self):
+        return self.options['--otp-base-dir']
+
     def _update_feed(self, row):
-        otp_base_dir = self.options['--otp-base-dir']
+        otp_base_dir = self._get_otp_base_dir()
         graph = row[0]
         feed = row[1]
         feed_url = row[2]
@@ -157,7 +162,7 @@ class GTFSUpdater(object):
 
     def _update_graph(self, graph):
         command = self.options['--otp-command']
-        graph_path = os.path.join(self.options['--otp-base-dir'], 'graphs', graph)
+        graph_path = os.path.join(self._get_otp_base_dir(), 'graphs', graph)
         print 'Running OTP command: ' + command
         print 'with path: ' + graph_path
         retcode = call([command, '--build', graph_path])
