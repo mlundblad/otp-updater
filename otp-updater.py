@@ -73,12 +73,16 @@ class GTFSUpdater(object):
                     continue
                 if len(row) < 3 or len(row) > 4:
                     print "Incorrect feed spec " + str(row)
+                    self._found_error = True
                     continue
                 self._update_feed(row)
                 # output empty line
                 print ''
         # update graphs
         self._update_graphs()
+
+    def found_error(self):
+        return self._found_error
 
     def _is_force_rebuild_set(self):
         return self.options['--force-rebuild']
@@ -174,6 +178,7 @@ class GTFSUpdater(object):
             print 'Sucessfully updated graph'
         else:
             print 'Error updating graph'
+            self._found_error = True
             if not self._is_keep_failed_graphs_set():
                 print 'Deleteing failed graph directory'
                 self._delete_graph(graph_path)
@@ -208,6 +213,7 @@ class GTFSUpdater(object):
             return output
         else:
             print 'Error fetching URL: ' + url + ': ' + response.message
+            self._found_error = True
             return None
 
     def _get_last_modified_for_url(self, url):
@@ -247,18 +253,19 @@ class GTFSUpdater(object):
             hasher.update(buf)
             buf = file.read(blocksize)
         return hasher.hexdigest()
-
+    
 def main(options=None):
     updater = GTFSUpdater(options)
     updater.update_feeds()
-
+    return 255 if updater.found_error else 0
     
 if __name__ == '__main__':
     from docopt import docopt
 
     arguments = docopt(__doc__, version='otp-updater 0.0')
     try:
-        main(options=arguments)
+        retcode = main(options=arguments)
     except KeyboardInterrupt:
         print "\nCancelled by user."
-    exit(0)
+        retcode = 1
+    exit(retcode)
