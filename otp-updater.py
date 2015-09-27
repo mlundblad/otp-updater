@@ -86,6 +86,9 @@ class GTFSUpdater(object):
     def _get_otp_base_dir(self):
         return self.options['--otp-base-dir']
 
+    def _is_keep_failed_graphs_set(self):
+        return self.options['--keep-failed-graphs']
+
     def _update_feed(self, row):
         otp_base_dir = self._get_otp_base_dir()
         graph = row[0]
@@ -171,6 +174,9 @@ class GTFSUpdater(object):
             print 'Sucessfully updated graph'
         else:
             print 'Error updating graph'
+            if not self._is_keep_failed_graphs_set():
+                print 'Deleteing failed graph directory'
+                self._delete_graph(graph_path)
 
     # create graph dir if it doesn't exist
     def _create_graph_dir(self, graph):
@@ -178,6 +184,11 @@ class GTFSUpdater(object):
         if not os.path.exists(path):
             print "Graph dir " + path + " didn't exist, so creating it"
             os.makedirs(path)
+
+    def _delete_graph_dir(self, graph):
+        path = os.path.join(self._get_otp_base_dir(), 'graphs', graph)
+        if os.path.exists(path):
+            shutil.rmtree(path)
 
     def _fetch_file(self, url):
         output = tempfile.NamedTemporaryFile()
