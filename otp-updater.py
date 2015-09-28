@@ -219,10 +219,10 @@ class GTFSUpdater(object):
                         break
                     output.write(buffer)
                     
-                    output.seek(0)
-                    output.flush()
-                    print 'Wrote output to temporary file: ' + output.name
-                    return output
+                output.seek(0)
+                output.flush()
+                print 'Wrote output to temporary file: ' + output.name
+                return output
             else:
                 print 'Error fetching URL: ' + url + ': ' + response.message
                 self._found_error = True
