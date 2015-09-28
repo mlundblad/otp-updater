@@ -23,7 +23,7 @@
 """
 
 Usage:
-  otp-updater.py [--otp-base-dir=<path>] [--feed-list=<path>] --otp-command=<path> [--force-rebuild] [--keep-failed-graphs]
+  otp-updater.py [--otp-base-dir=<path>] [--feed-list=<path>] --otp-command=<path> [--force-rebuild] [--keep-failed-graphs] [--otp-log-path=<path>]
 
 Options:
   -h --help              Show this screen.
@@ -36,6 +36,8 @@ Options:
                          for debugging)
   --keep-failed-graphs   Don't clean graph directories that failed to be built
                          successfully
+  --otp-log-path=<path>  Path to store output from the "otp --build" command
+                         runs in (default: current working directory)
 """
 
 import csv
@@ -93,6 +95,10 @@ class GTFSUpdater(object):
     def _is_keep_failed_graphs_set(self):
         return self.options['--keep-failed-graphs']
 
+    def _get_otp_log_path(self):
+        log_path = self.options['--otp-log-path']
+        return log_path if log_path else ''
+    
     def _update_feed(self, row):
         otp_base_dir = self._get_otp_base_dir()
         graph = row[0]
@@ -170,9 +176,13 @@ class GTFSUpdater(object):
     def _update_graph(self, graph):
         command = self.options['--otp-command']
         graph_path = os.path.join(self._get_otp_base_dir(), 'graphs', graph)
+        otp_log_path = os.path.join(self._get_otp_log_path(), 'otp-build-' + graph + '.log')
+
         print 'Running OTP command: ' + command
         print 'with path: ' + graph_path
-        retcode = call([command, '--build', graph_path])
+
+        with open(otp_log_path, 'w') as outfile:
+            retcode = call([command, '--build', graph_path], stdout=outfile, stderr=outfile)
 
         if retcode == 0:
             print 'Sucessfully updated graph'
