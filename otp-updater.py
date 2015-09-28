@@ -191,7 +191,7 @@ class GTFSUpdater(object):
             self._found_error = True
             if not self._is_keep_failed_graphs_set():
                 print 'Deleteing failed graph directory'
-                self._delete_graph(graph_path)
+                self._delete_graph_dir(graph_path)
 
     # create graph dir if it doesn't exist
     def _create_graph_dir(self, graph):
@@ -207,22 +207,28 @@ class GTFSUpdater(object):
 
     def _fetch_file(self, url):
         output = tempfile.NamedTemporaryFile()
-        response = urllib2.urlopen(url)
 
-        if response.getcode() == 200:
-            block_sz = 8192
-            while True:
-                buffer = response.read(block_sz)
-                if not buffer:
-                    break
-                output.write(buffer)
+        try:
+            response = urllib2.urlopen(url)
 
-            output.seek(0)
-            output.flush()
-            print 'Wrote output to temporary file: ' + output.name
-            return output
-        else:
-            print 'Error fetching URL: ' + url + ': ' + response.message
+            if response.getcode() == 200:
+                block_sz = 8192
+                while True:
+                    buffer = response.read(block_sz)
+                    if not buffer:
+                        break
+                    output.write(buffer)
+                    
+                    output.seek(0)
+                    output.flush()
+                    print 'Wrote output to temporary file: ' + output.name
+                    return output
+            else:
+                print 'Error fetching URL: ' + url + ': ' + response.message
+                self._found_error = True
+                return None
+        except:
+            print 'Error opening URL: ' + url
             self._found_error = True
             return None
 
