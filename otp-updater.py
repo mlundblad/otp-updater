@@ -137,17 +137,19 @@ class GTFSUpdater(object):
                 shutil.copyfile(fetched_feed_info.name, stored_feed_info_path)
         # try to see when feed was updated on the server
         local_feed_path = os.path.join(otp_base_dir, 'graphs', graph, feed + '.zip')
-        remote_feed_updated = self._get_last_modified_for_url(feed_url)
+        u = urlparse(feed_url)
+        if u.scheme == 'https' or u.scheme == 'http':
+            remote_feed_updated = self._get_last_modified_for_url(feed_url)
 
-        if os.path.exists(local_feed_path):
-            local_feed_updated = datetime.fromtimestamp(os.path.getmtime(local_feed_path))
-
-            print 'Remote feed updated on: ' + str(remote_feed_updated)
-            print 'Local feed updated on: ' + str(local_feed_updated)
-
-            if remote_feed_updated <> None and remote_feed_updated <= local_feed_updated:
-                print 'Local feed is up-to-date, skipping'
-                return
+            if os.path.exists(local_feed_path):
+                local_feed_updated = datetime.fromtimestamp(os.path.getmtime(local_feed_path))
+                
+                print 'Remote feed updated on: ' + str(remote_feed_updated)
+                print 'Local feed updated on: ' + str(local_feed_updated)
+                
+                if remote_feed_updated <> None and remote_feed_updated <= local_feed_updated:
+                    print 'Local feed is up-to-date, skipping'
+                    return
 
         print 'Downloading GTFS feed from: ' + feed
         new_feed = self._fetch_file(feed_url)
@@ -210,8 +212,9 @@ class GTFSUpdater(object):
 
         try:
             response = urllib2.urlopen(url)
-
-            if response.getcode() == 200:
+            u = urlparse(url)
+            
+            if u.scheme == 'ftp' or response.getcode() == 200:
                 block_sz = 8192
                 while True:
                     buffer = response.read(block_sz)
