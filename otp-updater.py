@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- encoding: utf-8 -*-
 
 # Copyright (c) 2015 Marcus Lundblad <ml@update.uu.se>
@@ -42,13 +42,12 @@ Options:
 
 import csv
 import os
-import urllib2
-import httplib
+import urllib.request, urllib.error, urllib.parse
+import http.client
 import tempfile
 import shutil
 import hashlib
-import sets
-from urlparse import urlparse
+from urllib.parse import urlparse
 from dateutil import parser
 from datetime import datetime
 from subprocess import call
@@ -57,7 +56,7 @@ class GTFSUpdater(object):
 
     def __init__(self, options):
         self.options = options
-        self._updated_graphs = sets.Set()
+        self._updated_graphs = set()
 
         if not self.options['--otp-base-dir']: self.options['--otp-base-dir'] = "/var/otp"
         if not self.options['--feed-list']: self.options['--feed-list'] = "/etc/gtfs-feeds.conf"
@@ -74,12 +73,12 @@ class GTFSUpdater(object):
                 if row[0].startswith('#'):
                     continue
                 if len(row) < 3 or len(row) > 4:
-                    print "Incorrect feed spec " + str(row)
+                    print("Incorrect feed spec " + str(row))
                     self._found_error = True
                     continue
                 self._update_feed(row)
                 # output empty line
-                print ''
+                print('')
         # update graphs
         self._update_graphs()
 
@@ -107,12 +106,12 @@ class GTFSUpdater(object):
         
         self._create_graph_dir(graph)
         
-        print "Processing feed: " + feed + ", for graph: " + graph
+        print("Processing feed: " + feed + ", for graph: " + graph)
 
         # if the force rebuild option is set, unconditionally add to graphs
         # to be updated
         if self._is_force_rebuild_set():
-            print 'The force rebuild option was set, so unconditionally add graph to be rebuilt'
+            print('The force rebuild option was set, so unconditionally add graph to be rebuilt')
             self._updated_graphs.add(graph)
 
         
@@ -121,16 +120,16 @@ class GTFSUpdater(object):
             feed_info_url = row[3]
             stored_feed_info_path = os.path.join(otp_base_dir, 'graphs', graph, feed + '_feed_info.txt')
             
-            print "Checking feed info: " + feed_info_url
+            print("Checking feed info: " + feed_info_url)
             
             fetched_feed_info = self._fetch_file(feed_info_url)
 
-            if fetched_feed_info <> None:
+            if fetched_feed_info != None:
                 if os.path.exists(stored_feed_info_path):
                     with open(stored_feed_info_path, 'rb') as stored_feed_info:
                         # compare fetched feed info with the stored one
                         if self._is_files_identical(fetched_feed_info, stored_feed_info):
-                            print 'Feed info is not updated, skipping'
+                            print('Feed info is not updated, skipping')
                             return
 
                 # store fetched feed_info.txt                
@@ -144,34 +143,34 @@ class GTFSUpdater(object):
             if os.path.exists(local_feed_path):
                 local_feed_updated = datetime.fromtimestamp(os.path.getmtime(local_feed_path))
                 
-                print 'Remote feed updated on: ' + str(remote_feed_updated)
-                print 'Local feed updated on: ' + str(local_feed_updated)
+                print('Remote feed updated on: ' + str(remote_feed_updated))
+                print('Local feed updated on: ' + str(local_feed_updated))
                 
-                if remote_feed_updated <> None and remote_feed_updated <= local_feed_updated:
-                    print 'Local feed is up-to-date, skipping'
+                if remote_feed_updated != None and remote_feed_updated <= local_feed_updated:
+                    print('Local feed is up-to-date, skipping')
                     return
 
-        print 'Downloading GTFS feed from: ' + feed
+        print('Downloading GTFS feed from: ' + feed)
         new_feed = self._fetch_file(feed_url)
-        if new_feed <> None:
+        if new_feed != None:
             # check if the GTFS file was really updated
             if os.path.exists(local_feed_path):
                 with open(local_feed_path, 'rb') as local_feed:
                     if not self._is_files_identical(local_feed, new_feed):
                         # copy in new GTFS feed
-                        print 'GTFS file has been updated, replace with new'
+                        print('GTFS file has been updated, replace with new')
                         shutil.copyfile(new_feed.name, local_feed_path)
                         # add to graphs to update
                         self._updated_graphs.add(graph)
             else:
                 # if the GTFS feed weren't already present, copy it in and
                 # trigger a graph build
-                print 'Adding new GTFS feed'
+                print('Adding new GTFS feed')
                 shutil.copyfile(new_feed.name, local_feed_path)
                 self._updated_graphs.add(graph)
                 
     def _update_graphs(self):
-        print 'Rebuilding updated graphs'
+        print('Rebuilding updated graphs')
         for graph in self._updated_graphs:
             self._update_graph(graph)
 
@@ -180,26 +179,26 @@ class GTFSUpdater(object):
         graph_path = os.path.join(self._get_otp_base_dir(), 'graphs', graph)
         otp_log_path = os.path.join(self._get_otp_log_path(), 'otp-build-' + graph + '.log')
 
-        print 'Running OTP command: ' + command
-        print 'with path: ' + graph_path
+        print('Running OTP command: ' + command)
+        print('with path: ' + graph_path)
 
         with open(otp_log_path, 'w') as outfile:
             retcode = call([command, '--build', graph_path], stdout=outfile, stderr=outfile)
 
         if retcode == 0:
-            print 'Sucessfully updated graph'
+            print('Sucessfully updated graph')
         else:
-            print 'Error updating graph'
+            print('Error updating graph')
             self._found_error = True
             if not self._is_keep_failed_graphs_set():
-                print 'Deleteing failed graph directory'
+                print('Deleteing failed graph directory')
                 self._delete_graph_dir(graph_path)
 
     # create graph dir if it doesn't exist
     def _create_graph_dir(self, graph):
         path = os.path.join(self._get_otp_base_dir(), 'graphs', graph)
         if not os.path.exists(path):
-            print "Graph dir " + path + " didn't exist, so creating it"
+            print("Graph dir " + path + " didn't exist, so creating it")
             os.makedirs(path)
 
     def _delete_graph_dir(self, graph):
@@ -211,7 +210,7 @@ class GTFSUpdater(object):
         output = tempfile.NamedTemporaryFile()
 
         try:
-            response = urllib2.urlopen(url)
+            response = urllib.request.urlopen(url)
             u = urlparse(url)
             
             if u.scheme == 'ftp' or response.getcode() == 200:
@@ -224,23 +223,23 @@ class GTFSUpdater(object):
                     
                 output.seek(0)
                 output.flush()
-                print 'Wrote output to temporary file: ' + output.name
+                print('Wrote output to temporary file: ' + output.name)
                 return output
             else:
-                print 'Error fetching URL: ' + url + ': ' + response.message
+                print('Error fetching URL: ' + url + ': ' + response.message)
                 self._found_error = True
                 return None
         except:
-            print 'Error opening URL: ' + url
+            print('Error opening URL: ' + url)
             self._found_error = True
             return None
 
     def _get_last_modified_for_url(self, url):
         u = urlparse(url)
         if u.scheme == 'https':
-            conn = httplib.HTTPSConnection(u.netloc)
+            conn = http.client.HTTPSConnection(u.netloc)
         else:
-            conn = httplib.HTTPConnection(u.netloc)
+            conn = http.client.HTTPConnection(u.netloc)
 
         if len(u.query) > 0:
             conn.request('HEAD', u.path + '?' + u.query)
@@ -255,7 +254,7 @@ class GTFSUpdater(object):
             else:
                 return parser.parse(mod, ignoretz=True)
         else:
-             print 'Failed to get last-modified from server'
+             print('Failed to get last-modified from server')
              return None
 
         
@@ -285,6 +284,6 @@ if __name__ == '__main__':
     try:
         retcode = main(options=arguments)
     except KeyboardInterrupt:
-        print "\nCancelled by user."
+        print("\nCancelled by user.")
         retcode = 1
     exit(retcode)
