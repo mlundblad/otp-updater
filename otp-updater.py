@@ -23,7 +23,7 @@
 """
 
 Usage:
-  otp-updater.py [--otp-base-dir=<path>] [--feed-list=<path>] --otp-command=<path> [--force-rebuild] [--keep-failed-graphs] [--otp-log-path=<path>]
+  otp-updater.py [--otp-base-dir=<path>] [--feed-list=<path>] --otp-command=<path> [--force-rebuild] [--keep-failed-graphs] [--otp-log-path=<path>] [--only-process-graph=<graph>]
 
 Options:
   -h --help              Show this screen.
@@ -38,6 +38,8 @@ Options:
                          successfully
   --otp-log-path=<path>  Path to store output from the "otp --build" command
                          runs in (default: current working directory)
+  --only-process=<graph> Only process the specified graph from the feed list,
+                         this can be used to bootstrap a new feed when added for example
 """
 
 import csv
@@ -103,6 +105,12 @@ class GTFSUpdater(object):
         graph = row[0]
         feed = row[1]
         feed_url = row[2]
+
+        # check if we process this feed
+        only_process_graph = self.options['--only-process-graph']
+
+        if only_process_graph and only_process_graph != graph:
+            return
         
         self._create_graph_dir(graph)
         
