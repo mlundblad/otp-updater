@@ -23,13 +23,14 @@
 """
 
 Usage:
-  otp-updater.py [--otp-base-dir=<path>] [--feed-list=<path>] --otp-command=<path> [--force-rebuild] [--keep-failed-graphs] [--otp-log-path=<path>] [--only-process-graph=<graph>]
+  otp-updater.py [--config-file=<path>] [--otp-base-dir=<path>] [--feed-list=<path>] [--otp-command=<path>] [--force-rebuild] [--keep-failed-graphs] [--otp-log-path=<path>] [--only-process-graph=<graph>]
 
 Options:
   -h --help              Show this screen.
   --version              Show version.
+  --config-file=<path>   Path to config file (default: /etc/otp-updater/otp-updater.conf)
   --otp-base-dir=<path>  Base directory for OpenTripPlanner's data (default: /var/otp).
-  --feed-list=<path>     CSV list of feeds (default: /etc/gtfs-feeds.conf).
+  --feed-list=<path>     CSV list of feeds (default: /etc/otp-updater/gtfs-feeds.conf).
   --otp-command=<path>   Full path to the OpenTripPlanner launcher
                          (used to trigger rebuilds of graphs)
   --force-rebuild        Always trigger rebuild of all graphs (used mainly
@@ -49,6 +50,7 @@ import http.client
 import tempfile
 import shutil
 import hashlib
+import configparser
 from urllib.parse import urlparse
 from dateutil import parser
 from datetime import datetime
@@ -60,8 +62,44 @@ class GTFSUpdater(object):
         self.options = options
         self._updated_graphs = set()
 
+        self.read_config()
+
         if not self.options['--otp-base-dir']: self.options['--otp-base-dir'] = "/var/otp"
         if not self.options['--feed-list']: self.options['--feed-list'] = "/etc/gtfs-feeds.conf"
+
+    def read_config(self):
+        optional_config = self.options['--config-file']
+        path = optional_config if optional_config else '/etc/otp-updater/otp-updater.conf'
+        config = configparser.ConfigParser()
+
+        config.read(path)
+
+        otp_options = config['OpenTripPlanner']
+        updater_options = config['Updater options']
+        gtfs_options = config['GTFS feeds']
+        
+        if not self.options['--otp-base-dir'] and 'otp_base_dir' in otp_options:
+            self.options['--otp-base-dir'] = otp_options['otp_base_dir']
+
+        if not self.options['--otp-command'] and 'otp_command' in otp_options:
+            self.options['--otp-command'] = otp_options['otp_command']
+
+        if not self.options['--feed-list'] and 'feed_list' in gtfs_options:
+            self.options['--feed-list'] = gtfs_options['feed_list']
+
+        if not self.options['--force-rebuild'] and 'force_rebuild' in updater_options:
+            force_rebuild = updater_options['force_rebuild']
+            if force_rebuild == 'true':
+                self.options['--force-rebuild'] = True
+
+        if not self.options['--keep-failed-graphs'] and 'keep_failed_graphs' in updater_options:
+            keep_failed_graphs = updater_options['keep_failed_graphs']
+            if keep_failed_graphs == 'true':
+                self.options['--keep-failed-graphs']
+
+        if not self.options['--otp-log-path'] and 'log_path' in updater_options:
+            log_path = updater_options['log_path']
+            self.options['--otp-log-path'] = log_path if log_path else ''
 
     def update_feeds(self):
         with open(self.options['--feed-list'], 'r') as feed_list:
