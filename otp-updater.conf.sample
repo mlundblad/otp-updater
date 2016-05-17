@@ -1,0 +1,11 @@
+[Updater options]
+force_rebuild = false
+keep_failed_graphs = false
+
+[OpenTripPlanner]
+otp_command = /path/to/OpenTripPlanner/otp
+otp_base_dir = /var/otp
+
+[GTFS feeds]
+feed_list = /etc/otp-updater/feeds.csv
+

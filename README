@@ -1,0 +1,25 @@
+Installation
+------------
+
+This guide will assume you have created a directory /etc/otp-updater
+Copy and modify the otp-updater.conf.sample and feeds.txt.sample to this
+directory (without the .sample extension).
+Make modifications to the OpenTripPlanner launcher command in the configuration
+file and if you have set up OpenTripPlanner using a different base directory
+than the default (/var/otp) also change this.
+Use the existing sample feed list (containing GTFS feeds for Portland (Oregon, USA)
+and Boston (USA) or edit and add the ones you want to test with.
+
+When set up, just running ./otp-updater.py should be sufficent to download the GTFS feeds
+and generate the graphs in OpenTripPlanner.
+
+Alternatively, one could specify the options using command line options
+run ./otp-updater.py --help to see a list of options.
+
+Dependencies
+------------
+
+python3-docopt
+python3-urllib3
+
+(these are the package names as used by Debian, other distributions may differ in naming)
