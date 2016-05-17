@@ -7,5 +7,5 @@ otp_command = /path/to/OpenTripPlanner/otp
 otp_base_dir = /var/otp
 
 [GTFS feeds]
-feed_list = /etc/otp-updater/feeds.csv
+feed_list = /etc/otp-updater/feeds.txt
 
