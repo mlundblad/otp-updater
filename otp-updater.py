@@ -39,7 +39,7 @@ Options:
                          successfully
   --otp-log-path=<path>  Path to store output from the "otp --build" command
                          runs in (default: current working directory)
-  --only-process=<graph> Only process the specified graph from the feed list,
+  --only-process-graph=<graph> Only process the specified graph from the feed list,
                          this can be used to bootstrap a new feed when added for example
 """
 
