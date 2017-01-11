@@ -198,7 +198,7 @@ class GTFSUpdater(object):
 
         if u.scheme == 'file':
             print('Reading locally supplied feed from: ' + u.path)
-            new_feed = open(u.path, 'r')
+            new_feed = open(u.path, 'rb')
         else:
             print('Downloading GTFS feed from: ' + feed)
             new_feed = self._fetch_file(feed_url)
