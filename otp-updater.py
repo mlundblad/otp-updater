@@ -196,8 +196,13 @@ class GTFSUpdater(object):
                     print('Local feed is up-to-date, skipping')
                     return
 
-        print('Downloading GTFS feed from: ' + feed)
-        new_feed = self._fetch_file(feed_url)
+        if u.scheme == 'file':
+            print('Reading locally supplied feed from: ' + u.path)
+            new_feed = open(u.path, 'r')
+        else:
+            print('Downloading GTFS feed from: ' + feed)
+            new_feed = self._fetch_file(feed_url)
+
         if new_feed != None:
             # check if the GTFS file was really updated
             if os.path.exists(local_feed_path):
